@@ -77,4 +77,4 @@ def update(name, status):
 
 
 # Main
-app.run(debug=True)
+app.run()
