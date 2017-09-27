@@ -24,6 +24,9 @@ class GoogleDocBackend(object):
         # Return a one-index'ed column #, from column header/ name
         return self.headers.index(name) + 1
 
+    def col_values(self, name):
+        return self.sheet.col_values(col=self.column(name=name))
+
     @property
     def headers(self):
         return self.sheet.row_values(1)
