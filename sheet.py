@@ -39,6 +39,5 @@ class GoogleDocBackend(object):
             self.sheet.update_cell(row=r, col=c, val=status)
 
 
-
 if __name__ == '__main__':
     GoogleDocBackend()
