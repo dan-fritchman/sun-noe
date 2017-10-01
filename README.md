@@ -1,7 +1,6 @@
 
-# Sunday @ Noe Roll Call 
-
-The one-click reply "app" for Sunday b-ball @ Upper Noe.
+# Sunday @ Noe Roll Call
+The one-click reply "app" for Sunday morning b-ball @ Upper Noe.
 
 ---
 ## Two Goals:
@@ -30,18 +29,27 @@ Those links are *personalized* for you, with an ID read from the Sheet, for exam
 * http://*site*/**SOME_NICKNAME**/OUT
 * http://*site*/**SOME_NICKNAME**/TBD
 
+Just click on one.  It'll update the "Sunday" column in the sheet.
+
+---
+# Some More Customization
+
 The nicknames are initially made by me (as sarcastically as possible) -
 but can be edited just as easily in the Sheet, under the (typically hidden) "ID" column:
 
 Name  |  Email  |  ID  | Phone  | Sunday |
 ---  |  ---  |  ---  | ---  | --- |
-Joe Schmo | jscho@gmail.com | schmo *Change here* | 5556667777| TBD | 
+Joe Schmo | jscho@gmail.com | schmo  | 5556667777| TBD |
 Jack Mehoff  | jack@gmail.com | mehoff | 1234567890| TBD | 
 
+Would correspond to "reply" links like:
 
-Just make something that remains a valid web address - for example dont try "ID = *http://steve.com*".
+* http://*site*/**schmo**/IN
+* http://*site*/**mehoff**/OUT
+
+Set those IDs to whatever you want.
+Just make something it remains a valid web address - for example dont try "ID = *http://steve.com*".
 That ain't gonna work.
-
 
 ---
 ## Why Make This Anyway
@@ -78,6 +86,7 @@ A million things, including:
 * Some indication of if/ when you hit up an "invalid player" page
 * Read-only status (so we don't have to publish the editable sheet)
 * Auto/ scheduled ping'ing (so far I still hit "send to all" manually)
+* Getting someone else to make it, instead of me.
 
 etc, etc
 
