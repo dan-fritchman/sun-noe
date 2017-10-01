@@ -64,7 +64,7 @@ def poll_everyone():
 
 def poll_dan():
     # Debug method to ping just me
-    all_status_msg(name='dan', phone='6102488063')
+    all_status_msg(name='dan', phone=os.environ['DAN_PHONE_NUM'])
 
 
 def main():

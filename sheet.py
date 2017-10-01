@@ -3,7 +3,6 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 
 class GoogleDocBackend(object):
-    url = ''
     sheet_name = 'Sunday Noe Bball Debug'
     expected_cols = 'Name ID Phone Sunday Quarter '.split()
 
