@@ -3,7 +3,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 
 class GoogleDocBackend(object):
-    sheet_name = 'Sunday Noe Bball Debug'
+    sheet_name = 'Sunday Noe Bball'
     expected_cols = 'Name ID Phone Sunday Quarter '.split()
 
     def __init__(self):
@@ -17,7 +17,7 @@ class GoogleDocBackend(object):
         # Check for required columns
         for x in self.expected_cols:
             if x not in self.headers:
-                raise ValueError
+                raise ValueError(f'Did not find required column: {x}')
 
     def column(self, name):
         # Return a one-index'ed column #, from column header/ name
