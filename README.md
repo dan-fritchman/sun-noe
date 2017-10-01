@@ -26,11 +26,12 @@ They will look like this:
 
 Those links are *personalized* for you, with an ID read from the Sheet, for example:
 
-* http://sun-noe.herokuapp.com/**SOME_NICKNAME**/IN
-* http://sun-noe.herokuapp.com/**SOME_NICKNAME**/OUT
-* http://sun-noe.herokuapp.com/**SOME_NICKNAME**/TBD
+* http://<site>/**SOME_NICKNAME**/IN
+* http://<site>/**SOME_NICKNAME**/OUT
+* http://<site>/**SOME_NICKNAME**/TBD
 
-The nicknames are initially made by me (as sarcastically as possible) - but can be edited just as easily in the Sheet, under the "ID" column:
+The nicknames are initially made by me (as sarcastically as possible) -
+but can be edited just as easily in the Sheet, under the (typically hidden) "ID" column:
 
 Name  |  Email  |  ID  | Phone  | Sunday |
 ---  |  ---  |  ---  | ---  | --- |
@@ -38,7 +39,8 @@ Joe Schmo | jscho@gmail.com | schmo *Change here* | 5556667777| TBD |
 Jack Mehoff  | jack@gmail.com | mehoff | 1234567890| TBD | 
 
 
-Just make something that remains a valid web address - for example dont try "ID = *http://steve.com*".  That won't work.
+Just make something that remains a valid web address - for example dont try "ID = *http://steve.com*".
+That ain't gonna work.
 
 
 ---
@@ -57,13 +59,25 @@ There's about a hundred lines of python code running this.
 A handful of services make this pretty easy:
 
 * The "site" uses [Flask](http://flask.pocoo.org/).
-* [Heroku]() makes running it really easy, and free.
+* [Heroku](https://www.heroku.com) makes running it really easy, and free.
 * [gspread](https://github.com/burnash/gspread) makes reading and writing the Google Sheet easy
-* [Twilio]() sends the SMS messages, for a small fee.
-* Twilio also
-  * [Shout-out ](https://www.twilio.com/blog/2017/02/an-easy-way-to-read-and-write-to-a-google-spreadsheet-in-python.html)
+* [Twilio](https://www.twilio.com/) sends the SMS messages, for a small fee.
+  * Twilio also wrote this nice post which helped piece the Google-Doc piece together. [Shout-out to them.](https://www.twilio.com/blog/2017/02/an-easy-way-to-read-and-write-to-a-google-spreadsheet-in-python.html)
 
 ---
 ## Copyright
 
 TODO: link to the "do what the fuck you want" license.
+
+---
+## What Would Make This Better
+
+A million things, including:
+
+* Smarter ping'ing, based on already-expressed status
+* Some indication of if/ when you hit up an "invalid player" page
+* Read-only status (so we don't have to publish the editable sheet)
+* Auto/ scheduled ping'ing (so far I still hit "send to all" manually)
+
+etc, etc
+
