@@ -1,5 +1,7 @@
-import os
+import os, time
+
 from twilio.rest import Client
+
 from sheet import GoogleDocBackend
 
 # Environment setup
@@ -10,6 +12,7 @@ app_url = os.environ['APP_URL']
 
 # SMS Client
 client = Client(account_sid, auth_token)
+DEFAULT_MSG = 'SUNDAY BBALL: '
 
 
 def send_msg(phone, body):
@@ -23,14 +26,16 @@ def send_status_msg(name, phone, status):
     send_msg(phone=phone, body=body)
 
 
-def all_status_msg(name, phone):
+def all_status_msg(name, phone, msg=DEFAULT_MSG):
     # Send a full set of status links
 
     print(f'Requesting status for {name}')
-    send_msg(phone=phone, body='SUNDAY BBALL: ')
+    send_msg(phone=phone, body=msg)
+    time.sleep(1.0)
 
-    for sts in 'in out tbd'.split():
-        send_status_msg(name=name, phone=phone, status=sts)
+    for status in 'in out tbd'.split():
+        send_status_msg(name=name, phone=phone, status=status)
+        time.sleep(1.0)
 
 
 def valid_phone(phone):
@@ -49,7 +54,7 @@ def valid_name(name):
     return isinstance(name, str) and len(name) > 1
 
 
-def poll_everyone():
+def poll_everyone(msg=DEFAULT_MSG):
     back_end = GoogleDocBackend()
     ids = back_end.col_values('ID')
     phone_nums = back_end.col_values('Phone')
@@ -57,14 +62,14 @@ def poll_everyone():
     for name, ph in zip(ids, phone_nums):
         if valid_name(name) and valid_phone(ph):
             print(f'Valid : {name}, {ph}')
-            all_status_msg(name=name, phone=ph)
+            all_status_msg(name=name, phone=ph, msg=msg)
         else:
             print(f'Invalid : {name}, {ph}')
 
 
-def poll_dan():
+def poll_dan(msg=DEFAULT_MSG):
     # Debug method to ping just me
-    all_status_msg(name='dan', phone=os.environ['DAN_PHONE_NUM'])
+    all_status_msg(name='dan', phone=os.environ['DAN_PHONE_NUM'], msg=msg)
 
 
 def main():
