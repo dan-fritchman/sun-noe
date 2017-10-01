@@ -26,9 +26,9 @@ They will look like this:
 
 Those links are *personalized* for you, with an ID read from the Sheet, for example:
 
-* http://<site>/**SOME_NICKNAME**/IN
-* http://<site>/**SOME_NICKNAME**/OUT
-* http://<site>/**SOME_NICKNAME**/TBD
+* http://*site*/**SOME_NICKNAME**/IN
+* http://*site*/**SOME_NICKNAME**/OUT
+* http://*site*/**SOME_NICKNAME**/TBD
 
 The nicknames are initially made by me (as sarcastically as possible) -
 but can be edited just as easily in the Sheet, under the (typically hidden) "ID" column:
