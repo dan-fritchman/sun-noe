@@ -1,7 +1,7 @@
 
-# B-Ball Roll Call
+# Sunday @ Noe Roll Call 
 
-The one-click reply "app" for our Sunday b-ball game.
+The one-click reply "app" for Sunday b-ball @ Upper Noe.
 
 ---
 ## Two Goals:
@@ -9,27 +9,36 @@ The one-click reply "app" for our Sunday b-ball game.
 1. One click to reply
 2. Do so via text
 
-This does not exist in any existing service I can find.
+This did not exist in any existing service we could find.
 So we made this little bootleg one.
 
 ---
 ## How to Use This
 
-If you made your way here, you are probably part of the game.
+If you care to be here, you are probably part of the game.
 Your name is then also in the super-secret Google Sheet which serves as our "player database".
 
+Every so often (maybe once or twice a week), 
 You will receive receive 3 links from a weird number (12674777207)
 They will look like this:
 
-![](txt.jpg)
+![txts](txt.png)
 
 Those links are *personalized* for you, with an ID read from the Sheet, for example:
 
-* http://sun-noe.herokuapp.com/**SOME_NICKNAME**/in
+* http://sun-noe.herokuapp.com/**SOME_NICKNAME**/IN
+* http://sun-noe.herokuapp.com/**SOME_NICKNAME**/OUT
+* http://sun-noe.herokuapp.com/**SOME_NICKNAME**/TBD
 
-The nicknames are initially made by me - but can be edited just as easily in the Sheet, under the "ID" column:
+The nicknames are initially made by me (as sarcastically as possible) - but can be edited just as easily in the Sheet, under the "ID" column:
+
+Name  |  Email  |  ID  | Phone  | Sunday |
+---  |  ---  |  ---  | ---  | --- |
+Joe Schmo | jscho@gmail.com | schmo *Change here* | 5556667777| TBD | 
+Jack Mehoff  | jack@gmail.com | mehoff | 1234567890| TBD | 
 
 
+Just make something that remains a valid web address - for example dont try "ID = *http://steve.com*".  That won't work.
 
 
 ---
