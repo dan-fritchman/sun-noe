@@ -12,9 +12,7 @@ class GoogleDocBackend(object):
         # use creds to create a client to interact with the Google Drive API
         scope = ['https://spreadsheets.google.com/feeds']
         js = os.environ['GSPREAD_JSON']
-        print(js)
         j = json.loads(js)
-        print(j)
         creds = ServiceAccountCredentials.from_json_keyfile_dict(j, scope)
         client = gspread.authorize(creds)
 
