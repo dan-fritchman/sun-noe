@@ -4,21 +4,70 @@
     <meta charset="UTF-8">
     <title> {{STATUS}}</title>
     <style>
+
+        html, body {
+            width: 100%;
+        }
+
+        table {
+            margin: 0 auto;
+        }
+
         h1, h2, h3, body {
             background-color: lightgrey;
             font-family: Helvetica;
             text-align: center;
         }
 
-        h1 { font-size: 150pt; }
-        h2 { font-size: 50pt; }
+        h1 {
+            font-size: 150pt;
+        }
+
+        h2 {
+            font-size: 50pt;
+        }
+
+        h3 {
+            font-size: 30pt;
+        }
+
+        table.dataframe, .dataframe th, .dataframe td {
+            border: none;
+            border-bottom: 1px solid #C8C8C8;
+            border-collapse: collapse;
+            text-align: left;
+            padding: 10px;
+            margin-bottom: 40px;
+            font-size: 16pt;
+        }
+
+        th {
+            background-color: black;
+            color: white;
+        }
+
+        tr:nth-child(odd) {
+            background-color: lightgrey;
+        }
+
+        tr:nth-child(even) {
+            background-color: white;
+        }
+
+        tr:hover {
+            background-color: grey;
+        }
     </style>
 </head>
 
 <body>
-    <h1> {{STATUS}} </h1>
-    <h2> {{REPLY}} </h2>
-    <a href="https://github.com/dfritchman/sun-noe"> WTF is This Site? </a>
+<h1> {{STATUS}} </h1>
+<h2> {{REPLY}} </h2>
+<h3> Everybody else: </h3>
+
+{{DATA | safe}}
+
+<a href="https://github.com/dfritchman/sun-noe"> WTF is This Site? </a>
 
 </body>
 </html>
