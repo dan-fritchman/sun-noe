@@ -7,6 +7,7 @@ gunicorn = "*"
 flask = "*"
 gspread = "*"
 oauth2client = "*"
+pandas = "*"
 
 [requires]
 python_version = "3.6"
