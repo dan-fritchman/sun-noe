@@ -33,6 +33,9 @@ def all_status_msg(name, phone, msg=DEFAULT_MSG):
     send_msg(phone=phone, body=msg)
     time.sleep(1.0)
 
+    send_msg(phone=phone, body=os.environ['DOC_EDIT_URL'])
+    time.sleep(1.0)
+
     for status in 'in out tbd'.split():
         send_status_msg(name=name, phone=phone, status=status)
         time.sleep(1.0)
