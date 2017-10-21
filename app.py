@@ -37,6 +37,7 @@ def player_page(name):
 @app.route('/<name>/<status>')
 def update(name, status):
     # Load up status
+    print(f'Status update request for: {name} to {status}')
     str_stat = str(status).lower()
 
     if str_stat in 'in yes '.split():

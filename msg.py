@@ -1,4 +1,5 @@
-import os, time
+import os
+import time
 
 from twilio.rest import Client
 
@@ -66,6 +67,36 @@ def poll_everyone(msg=DEFAULT_MSG):
         if valid_name(name) and valid_phone(ph):
             print(f'Valid : {name}, {ph}')
             all_status_msg(name=name, phone=ph, msg=msg)
+        else:
+            print(f'Invalid : {name}, {ph}')
+
+
+def known_status(status):
+    return status.lower().strip() in 'in yes no out'.split()
+
+
+def poll_unknowns(msg=DEFAULT_MSG):
+    back_end = GoogleDocBackend()
+    ids = back_end.col_values('ID')
+    phone_nums = back_end.col_values('Phone')
+    statuses = back_end.col_values('Sunday')
+
+    assert len(ids) == len(phone_nums)
+    assert len(statuses) == len(phone_nums)
+
+    for _ in range(len(ids)):
+        name = ids[_]
+        ph = phone_nums[_]
+        sts = statuses[_]
+
+        if valid_name(name) and valid_phone(ph):
+            print(f'Valid : {name}, {ph}')
+
+            if known_status(sts):
+                print(f'Confirmed status for {name} - {ph}')
+            else:
+                print(f'Sending status links to : {name}, {ph}')
+                all_status_msg(name=name, phone=ph, msg=msg)
         else:
             print(f'Invalid : {name}, {ph}')
 
