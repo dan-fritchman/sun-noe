@@ -1,6 +1,9 @@
-import os
 import json
+import os
+from collections import OrderedDict
+
 import gspread
+import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
 
 
@@ -34,13 +37,35 @@ class GoogleDocBackend(object):
     def headers(self):
         return self.sheet.row_values(1)
 
+    @property
+    def ids(self):
+        return self.sheet.col_values(col=self.column(name='ID'))
+
     def update_status(self, id, status):
-        ids = self.sheet.col_values(col=self.column(name='ID'))
-        if id in ids:
-            r = ids.index(id) + 1
+        #ids = self.sheet.col_values(col=self.column(name='ID'))
+        if id in self.ids:
+            r = self.ids.index(id) + 1
             c = self.column(name='Sunday')
             self.sheet.update_cell(row=r, col=c, val=status)
+            return True
+        else:
+            return False
+
+    @property
+    def df(self):
+        # DataFrame summarizing the fun bits of back-end data.
+        do = OrderedDict()
+        do['NAME'] = self.col_values('Name')[1:]
+        do['ID'] = self.col_values('ID')[1:]
+        do['SUNDAY'] = self.col_values('Sunday')[1:]
+        df = pd.DataFrame(do)
+        return df
+
+    @property
+    def html_table(self):
+        return self.df.to_html(index=False)
 
 
 if __name__ == '__main__':
+    # For testing connections
     GoogleDocBackend()
