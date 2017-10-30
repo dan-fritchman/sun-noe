@@ -18,7 +18,7 @@ If you care to be here, you are probably part of the game.
 Your name is then also in the super-secret Google Sheet which serves as our "player database".
 
 Every so often (maybe once or twice a week), 
-You will receive receive 3 links from a weird number (12674777207)
+You will receive receive 3 links from a weird number (+1(267)477-7207)
 They will look like this:
 
 ![txts](txt.png)
@@ -37,10 +37,10 @@ Just click on one.  It'll update the "Sunday" column in the sheet.
 The nicknames are initially made by me (as sarcastically as possible) -
 but can be edited just as easily in the Sheet, under the (typically hidden) "ID" column:
 
-Name  |  Email  |  ID  | Phone  | Sunday |
----  |  ---  |  ---  | ---  | --- |
-Joe Schmo | jscho@gmail.com | schmo  | 5556667777| TBD |
-Jack Mehoff  | jack@gmail.com | mehoff | 1234567890| TBD | 
+Name         |  Email           |  ID    | Phone      | Sunday |
+-----------  |  --------------  | -----  | ---------- | --- |
+Joe Schmo    | jscho@gmail.com  | schmo  | 5556667777 | TBD |
+Jack Mehoff  | jack@gmail.com   | mehoff | 1234567890 | TBD |
 
 Would correspond to "reply" links like:
 
@@ -66,16 +66,32 @@ Something like:
 There's about a hundred lines of python code running this.
 A handful of services make this pretty easy:
 
-* The "site" uses [Flask](http://flask.pocoo.org/).
-* [Heroku](https://www.heroku.com) makes running it really easy, and free.
-* [gspread](https://github.com/burnash/gspread) makes reading and writing the Google Sheet easy
-* [Twilio](https://www.twilio.com/) sends the SMS messages, for a small fee.
+* The "site" is [app.py](app.py).
+  * It is built using [Flask](http://flask.pocoo.org/).
+  * We run on [Heroku](https://www.heroku.com), for free.
+* The "back end database - the Google Sheet - is managed by [sheet.py](sheet.py).
+  * [gspread](https://github.com/burnash/gspread) makes accessing it really easy.
+* Texts are sent by [msg.py](msg.py).
+  * This is enabled by [Twilio](https://www.twilio.com/), for a small fee.
   * Twilio also wrote this nice post which helped piece the Google-Doc piece together. [Shout-out to them.](https://www.twilio.com/blog/2017/02/an-easy-way-to-read-and-write-to-a-google-spreadsheet-in-python.html)
 
 ---
-## Copyright
+## License
+                DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+                       Version 2, December 2004
 
-TODO: link to the "do what the fuck you want" license.
+	Copyright (C) 2014-2017 AJ Alt
+
+	Everyone is permitted to copy and distribute verbatim or modified
+	copies of this license document, and changing it is allowed as long
+	as the name is changed.
+
+                DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+       TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
+ 	0. You just DO WHAT THE FUCK YOU WANT TO.
+
+Shout out: [fuckitpy](https://github.com/ajalt/fuckitpy).
 
 ---
 ## What Would Make This Better
