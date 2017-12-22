@@ -98,11 +98,11 @@ Shout out: [fuckitpy](https://github.com/ajalt/fuckitpy).
 
 A million things, including:
 
-* Smarter ping'ing, based on already-expressed status
-* Some indication of if/ when you hit up an "invalid player" page
-* Read-only status (so we don't have to publish the editable sheet)
-* Auto/ scheduled ping'ing (so far I still hit "send to all" manually)
-* Getting someone else to make it, instead of me.
+- [x] Smarter ping'ing, based on already-expressed status
+- [x] Some indication of if/ when you hit up an "invalid player" page
+- [x] Read-only status (so we don't have to publish the editable sheet)
+- [ ] Auto/ scheduled ping'ing (so far I still hit "send to all" manually)
+- [ ] Getting someone else to make it, instead of me.
 
 etc, etc
 
