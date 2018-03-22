@@ -72,17 +72,21 @@ def poll_everyone(msg=DEFAULT_MSG):
 
 
 def known_status(status):
-    return status.lower().strip() in 'in yes no out'.split()
+    return status.lower().strip() in 'in yes no out full half'.split()
 
 
-def poll_unknowns(msg=DEFAULT_MSG):
+def get_unknowns(status_col='Sunday'):
+    # Look up players without known status in column <status_col>
+
     back_end = GoogleDocBackend()
+
     ids = back_end.col_values('ID')
     phone_nums = back_end.col_values('Phone')
-    statuses = back_end.col_values('Sunday')
-
+    statuses = back_end.col_values(status_col)
     assert len(ids) == len(phone_nums)
     assert len(statuses) == len(phone_nums)
+
+    unknowns = []
 
     for _ in range(len(ids)):
         name = ids[_]
@@ -90,15 +94,51 @@ def poll_unknowns(msg=DEFAULT_MSG):
         sts = statuses[_]
 
         if valid_name(name) and valid_phone(ph):
-            print(f'Valid : {name}, {ph}')
+            print(f'Valid : {name}, {ph}. Status = {sts}')
 
             if known_status(sts):
                 print(f'Confirmed status for {name} - {ph}')
             else:
-                print(f'Sending status links to : {name}, {ph}')
-                all_status_msg(name=name, phone=ph, msg=msg)
+                print(f'Unknown status for {name} - {ph}')
+                unknowns.append((name, ph))
+                # print(f'Sending status links to : {name}, {ph}')
+                # all_status_msg(name=name, phone=ph, msg=msg)
         else:
             print(f'Invalid : {name}, {ph}')
+
+    return unknowns
+
+
+def qtr_status_msg(*, name, phone, qname, msg):
+    # Send a full set of status links for quarter <qname>
+
+    print(f'Sending quarter-status msg for {name}')
+    send_msg(phone=phone, body=msg)
+    time.sleep(1.0)
+
+    send_msg(phone=phone, body=os.environ['DOC_EDIT_URL'])
+    time.sleep(1.0)
+
+    for status in 'out half full '.split():
+        body = f'{app_url}/{name}/quarter/{qname}/{status}'
+        send_msg(phone=phone, body=body)
+        time.sleep(1.0)
+
+
+def poll_qtr(players, qname, msg):
+    for p in players:
+        name = p[0]
+        phone = p[1]
+        qtr_status_msg(name=name, phone=phone, qname=qname, msg=msg)
+
+
+def poll_unknowns_sunday(msg=DEFAULT_MSG):
+    # Unknowns come back in a list of (name, phone) tuples, at least for now
+    unknowns = get_unknowns(status_col='Sunday')
+
+    for u in unknowns:
+        print(f'Sending status links to : {name}, {ph}')
+        all_status_msg(name=u[0], phone=u[1], msg=msg)
 
 
 def poll_dan(msg=DEFAULT_MSG):
@@ -107,7 +147,14 @@ def poll_dan(msg=DEFAULT_MSG):
 
 
 def main():
-    poll_dan()
+    # Poll unknowns for the quarter
+    u = get_unknowns(status_col='Q2_2018')
+    print(u)
+
+    to_poll = [('dan', '6102488063')]
+    poll_qtr(players=to_poll,
+             qname='Q2_2018',
+             msg='Sunday BBall Q2 2018: ')
 
 
 if __name__ == '__main__':

@@ -42,14 +42,28 @@ class GoogleDocBackend(object):
         return self.sheet.col_values(col=self.column(name='ID'))
 
     def update_status(self, id, status):
-        #ids = self.sheet.col_values(col=self.column(name='ID'))
-        if id in self.ids:
-            r = self.ids.index(id) + 1
-            c = self.column(name='Sunday')
-            self.sheet.update_cell(row=r, col=c, val=status)
-            return True
-        else:
+        # Update Sunday status for ID <id>
+
+        if id not in self.ids:
             return False
+
+        r = self.ids.index(id) + 1
+        c = self.column(name='Sunday')
+        self.sheet.update_cell(row=r, col=c, val=status)
+        return True
+
+    def update_qtr(self, id, qtr, status):
+        # Update quarterly status for ID <id>, Quarter <qtr>
+
+        if qtr not in self.headers:
+            return False
+        if id not in self.ids:
+            return False
+
+        r = self.ids.index(id) + 1
+        c = self.column(name=qtr)
+        self.sheet.update_cell(row=r, col=c, val=status)
+        return True
 
     @property
     def df(self):
@@ -58,6 +72,7 @@ class GoogleDocBackend(object):
         do['NAME'] = self.col_values('Name')[1:]
         do['ID'] = self.col_values('ID')[1:]
         do['SUNDAY'] = self.col_values('Sunday')[1:]
+        do['QUARTER'] = self.col_values('Quarter')[1:]
         df = pd.DataFrame(do)
         return df
 

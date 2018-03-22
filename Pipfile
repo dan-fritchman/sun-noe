@@ -8,6 +8,7 @@ flask = "*"
 gspread = "*"
 oauth2client = "*"
 pandas = "*"
+twilio = "*"
 
 [requires]
 python_version = "3.6"
