@@ -151,7 +151,7 @@ def main():
     u = get_unknowns(status_col='Q2_2018')
     print(u)
 
-    to_poll = [('dan', '6102488063')]
+    to_poll = u
     poll_qtr(players=to_poll,
              qname='Q2_2018',
              msg='Sunday BBall Q2 2018: ')
