@@ -135,10 +135,12 @@ def poll_qtr(players, qname, msg):
 def poll_unknowns_sunday(msg=DEFAULT_MSG):
     # Unknowns come back in a list of (name, phone) tuples, at least for now
     unknowns = get_unknowns(status_col='Sunday')
-
+    print(unknowns)
     for u in unknowns:
+        name = u[0]
+        ph = u[1]
         print(f'Sending status links to : {name}, {ph}')
-        all_status_msg(name=u[0], phone=u[1], msg=msg)
+        all_status_msg(name=name, phone=ph, msg=msg)
 
 
 def poll_dan(msg=DEFAULT_MSG):
@@ -147,6 +149,10 @@ def poll_dan(msg=DEFAULT_MSG):
 
 
 def main():
+    pass
+
+
+def poll_q2():
     # Poll unknowns for the quarter
     u = get_unknowns(status_col='Q2_2018')
     print(u)
