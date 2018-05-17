@@ -9,7 +9,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 class GoogleDocBackend(object):
     sheet_name = 'Sunday Noe Bball'
-    expected_cols = 'Name ID Phone Sunday Quarter '.split()
+    expected_cols = 'Name ID Phone Sunday '.split()
 
     def __init__(self):
         # use creds to create a client to interact with the Google Drive API

@@ -134,18 +134,30 @@ def poll_qtr(players, qname, msg):
 
 def poll_unknowns_sunday(msg=DEFAULT_MSG):
     # Unknowns come back in a list of (name, phone) tuples, at least for now
+    msgs = []
+
     unknowns = get_unknowns(status_col='Sunday')
-    print(unknowns)
+    msg = f'Unknowns: {str(unknowns)}'
+    msgs.append(msg)
+    print(msg)
+
     for u in unknowns:
         name = u[0]
         ph = u[1]
-        print(f'Sending status links to : {name}, {ph}')
+
+        msg = f'Sending status links to : {name}, {ph}'
+        msgs.append(msg)
+        print(msg)
+
         all_status_msg(name=name, phone=ph, msg=msg)
+
+    return msgs
 
 
 def poll_dan(msg=DEFAULT_MSG):
-    # Debug method to ping just me
+    """Debug method to ping just user `dan` """
     all_status_msg(name='dan', phone=os.environ['DAN_PHONE_NUM'], msg=msg)
+    return ['Polled dan']
 
 
 def main():

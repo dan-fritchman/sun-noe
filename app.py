@@ -1,15 +1,11 @@
-from flask import Flask, render_template
+import os
+
+from flask import Flask, render_template, request
 
 from sheet import GoogleDocBackend
 
 back_end = GoogleDocBackend()
 app = Flask(__name__)
-
-
-@app.route('/')
-@app.route('/status')
-def status():
-    return back_end.html_table
 
 
 class Reply(object):
@@ -30,13 +26,21 @@ class Tbd(Reply):
     STATUS = 'TBD'
     REPLY = 'OK, keep us posted later this week.'
 
+
 class Full(Reply):
     STATUS = 'FULL'
     REPLY = 'Got it.'
 
+
 class Half(Reply):
     STATUS = 'HALF'
     REPLY = 'Aight, well see you half time.'
+
+
+@app.route('/')
+@app.route('/status')
+def status():
+    return back_end.html_table
 
 
 def get_status(str_stat):
@@ -70,9 +74,10 @@ def update(name, status):
                                STATUS=sts.STATUS,
                                REPLY=sts.REPLY,
                                DATA=back_end.html_table)
-    else:
-        return """SORRY something screwed up trying to update yo status. 
+
+    return """SORRY something screwed up trying to update yo status. 
                    Maybe do it manually. """
+
 
 def get_qtr_status(str_stat):
     if str_stat in 'full yes '.split():
@@ -83,6 +88,7 @@ def get_qtr_status(str_stat):
         return Half()
     else:
         return None
+
 
 @app.route('/<name>/quarter/<qname>/<status>')
 def update_qtr(name, status, qname='Quarter'):
@@ -104,10 +110,35 @@ def update_qtr(name, status, qname='Quarter'):
                                STATUS=sts.STATUS,
                                REPLY=sts.REPLY,
                                DATA='')
-    else:
-        return """SORRY something screwed up trying to update yo status. 
+
+    return """SORRY something screwed up trying to update yo status. 
                        Maybe do it manually. """
 
 
+@app.route('/poll/<key>')
+def poll(key=None):
+    """ URL for SMS-based polling """
+
+    # Check they got the secret-key right
+    if key != os.environ['POLLING_KEY']:
+        return f'Invalid Polling key {key}'
+
+    # Look up the method to use, from request data
+    default_method = 'poll_unknowns_sunday'
+    meth_name = request.args.get('method', default_method)
+
+    # Look up method from our `msg` module
+    import msg
+    meth = getattr(msg, meth_name, None)
+    if meth is None:
+        return f'Invalid polling method: {meth}'
+
+    # Run it!
+    rv = meth()
+
+    # And respond with some log-style output
+    return '<br>'.join(rv)
+
+
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
