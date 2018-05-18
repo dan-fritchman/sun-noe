@@ -3,7 +3,7 @@ import time
 
 from twilio.rest import Client
 
-from sheet import GoogleDocBackend
+from .sheet import GoogleDocBackend
 
 # Environment setup
 account_sid = os.environ['TWILIO_ACCT_SID']

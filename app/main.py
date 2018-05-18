@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, render_template, request
 
-from sheet import GoogleDocBackend
+from .sheet import GoogleDocBackend
 
 back_end = GoogleDocBackend()
 app = Flask(__name__)
@@ -128,7 +128,7 @@ def poll(key=None):
     meth_name = request.args.get('method', default_method)
 
     # Look up method from our `msg` module
-    import msg
+    from . import msg
     meth = getattr(msg, meth_name, None)
     if meth is None:
         return f'Invalid polling method: {meth}'
