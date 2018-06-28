@@ -156,6 +156,7 @@ def poll_unknowns_sunday(msg=DEFAULT_MSG):
 
 def poll_dan(msg=DEFAULT_MSG):
     """Debug method to ping just user `dan` """
+    print('Polling Dan')
     all_status_msg(name='dan', phone=os.environ['DAN_PHONE_NUM'], msg=msg)
     return ['Polled dan']
 

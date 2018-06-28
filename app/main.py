@@ -1,4 +1,5 @@
 import os
+from threading import Thread
 
 from flask import Flask, render_template, request
 
@@ -9,7 +10,15 @@ app = Flask(__name__)
 
 
 class Reply(object):
-    pass
+    @staticmethod
+    def from_str(str_stat):
+        if str_stat in 'in yes '.split():
+            return In()
+        elif str_stat in 'out no '.split():
+            return Out()
+        elif str_stat in 'tbd '.split():
+            return Tbd()
+        return None
 
 
 class In(Reply):
@@ -43,17 +52,6 @@ def status():
     return back_end.html_table
 
 
-def get_status(str_stat):
-    if str_stat in 'in yes '.split():
-        return In()
-    elif str_stat in 'out no '.split():
-        return Out()
-    elif str_stat in 'tbd '.split():
-        return Tbd()
-    else:
-        return None
-
-
 @app.route('/<name>/<status>')
 def update(name, status):
     # Sunday status update
@@ -65,7 +63,7 @@ def update(name, status):
     if str_name not in back_end.ids:
         return f'SORRY we aint know no {name} '
 
-    sts = get_status(str_stat)
+    sts = Reply.from_str(str_stat)
     if sts is None:
         return f'SORRY {name} didnt really understand {str_stat}'
 
@@ -134,10 +132,10 @@ def poll(key=None):
         return f'Invalid polling method: {meth}'
 
     # Run it!
-    rv = meth()
+    Thread(target=meth).start()
 
     # And respond with some log-style output
-    return '<br>'.join(rv)
+    return f'Running {meth.__name__}', 200
 
 
 if __name__ == '__main__':
