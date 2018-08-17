@@ -27,6 +27,37 @@ def send_status_msg(name, phone, status):
     send_msg(phone=phone, body=body)
 
 
+"""
+Everything below here could use a re-org, I don't have time for now. 
+Something like:
+
+* Add (somewhere) the concepts of "current game column" and "current quarter column"
+    * Probably goes in the back-end 
+    
+* Have a Player or PlayerStatus struct or class, with stuff like:
+
+class PlayerStatus:
+    def __init__(self, name, phone, game_status, qtr_status):
+        # Store all that stuff 
+        
+    # Know how to check for validity and "poll-ability"
+    def valid(self):
+        # Check name & phone are valid 
+        return valid(self.name) and valid(self.phone) 
+        
+    def pollable(self):
+        return self.active and self.valid
+         
+    def active(self):
+        # Boolean indication of activity for the current quarter
+        return valid(self.qtr_status)
+
+* Create these as we walk through the back-end
+* Use their methods to decide who to poll 
+* This looks like a candidate for a py37 @dataclass 
+"""
+
+
 def all_status_msg(name, phone, msg=DEFAULT_MSG):
     # Send a full set of status links
 
@@ -58,25 +89,13 @@ def valid_name(name):
     return isinstance(name, str) and len(name) > 1
 
 
-def poll_everyone(msg=DEFAULT_MSG):
-    back_end = GoogleDocBackend()
-    ids = back_end.col_values('ID')
-    phone_nums = back_end.col_values('Phone')
-
-    for name, ph in zip(ids, phone_nums):
-        if valid_name(name) and valid_phone(ph):
-            print(f'Valid : {name}, {ph}')
-            all_status_msg(name=name, phone=ph, msg=msg)
-        else:
-            print(f'Invalid : {name}, {ph}')
-
-
 def known_status(status):
     return status.lower().strip() in 'in yes no out full half'.split()
 
 
 def get_unknowns(status_col='Sunday'):
     # Look up players without known status in column <status_col>
+    # FIXME: move this.
 
     back_end = GoogleDocBackend()
 
@@ -109,8 +128,59 @@ def get_unknowns(status_col='Sunday'):
     return unknowns
 
 
+"""
+Maybe break this stuff out to a separate polling-module. 
+"""
+
+
+def poll_everyone(msg=DEFAULT_MSG):
+    """ Poll *all* members of the player DB """
+
+    back_end = GoogleDocBackend()
+    ids = back_end.col_values('ID')
+    phone_nums = back_end.col_values('Phone')
+
+    for name, ph in zip(ids, phone_nums):
+        if valid_name(name) and valid_phone(ph):
+            print(f'Valid : {name}, {ph}')
+            all_status_msg(name=name, phone=ph, msg=msg)
+        else:
+            print(f'Invalid : {name}, {ph}')
+
+
+def poll_unknowns_sunday(msg=DEFAULT_MSG):
+    """ Poll everyone with unknown-status for upcoming game """
+    print(f'Running poll_unknowns_sunday with msg={msg}')
+
+    # Unknowns come back in a list of (name, phone) tuples, at least for now
+    unknowns = get_unknowns(status_col='Sunday')
+    # FIXME: would be nice to have a "real" way to test mock-up data.
+    # unknowns = [('dan', os.environ['DAN_PHONE_NUM')]
+
+    print(f'Unknowns: {str(unknowns)}')
+    for u in unknowns:
+        name = u[0]
+        ph = u[1]
+        print(f'poll_unknowns_sunday Polling : {name}, {ph}')
+        all_status_msg(name=name, phone=ph, msg=msg)
+
+
+def poll_dan(msg=DEFAULT_MSG):
+    """Debug method to ping just user `dan` """
+    print('Polling Dan')
+    all_status_msg(name='dan', phone=os.environ['DAN_PHONE_NUM'], msg=msg)
+    return ['Polled dan']
+
+
+"""
+Quarter-Status Polling Stuff
+ Really only been used once.  
+ Maybe bring to more-general life, some day.
+"""
+
+
 def qtr_status_msg(*, name, phone, qname, msg):
-    # Send a full set of status links for quarter <qname>
+    """ Send a full set of status links for quarter <qname> """
 
     print(f'Sending quarter-status msg for {name}')
     send_msg(phone=phone, body=msg)
@@ -132,41 +202,9 @@ def poll_qtr(players, qname, msg):
         qtr_status_msg(name=name, phone=phone, qname=qname, msg=msg)
 
 
-def poll_unknowns_sunday(msg=DEFAULT_MSG):
-    # Unknowns come back in a list of (name, phone) tuples, at least for now
-    msgs = []
-
-    unknowns = get_unknowns(status_col='Sunday')
-    msg = f'Unknowns: {str(unknowns)}'
-    msgs.append(msg)
-    print(msg)
-
-    for u in unknowns:
-        name = u[0]
-        ph = u[1]
-
-        msg = f'Sending status links to : {name}, {ph}'
-        msgs.append(msg)
-        print(msg)
-
-        all_status_msg(name=name, phone=ph, msg=msg)
-
-    return msgs
-
-
-def poll_dan(msg=DEFAULT_MSG):
-    """Debug method to ping just user `dan` """
-    print('Polling Dan')
-    all_status_msg(name='dan', phone=os.environ['DAN_PHONE_NUM'], msg=msg)
-    return ['Polled dan']
-
-
-def main():
-    pass
-
-
 def poll_q2():
-    # Poll unknowns for the quarter
+    """ Poll unknowns for the quarter """
+
     u = get_unknowns(status_col='Q2_2018')
     print(u)
 
@@ -174,7 +212,3 @@ def poll_q2():
     poll_qtr(players=to_poll,
              qname='Q2_2018',
              msg='Sunday BBall Q2 2018: ')
-
-
-if __name__ == '__main__':
-    main()
