@@ -10,6 +10,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 class GoogleDocBackend(object):
     sheet_name = 'Sunday Noe Bball'
     expected_cols = 'Name ID Phone Sunday '.split()
+    current_game_col_name = 'Sunday'
+    current_qtr_col_name = 'Q4_2018'
 
     def __init__(self):
         # use creds to create a client to interact with the Google Drive API
@@ -31,10 +33,12 @@ class GoogleDocBackend(object):
         return self.headers.index(name) + 1
 
     def col_values(self, name):
+        """ Get the column-values in column-name `name` """
         return self.sheet.col_values(col=self.column(name=name))
 
     @property
     def headers(self):
+        """ Get the header-row entries """
         return self.sheet.row_values(1)
 
     @property
@@ -78,9 +82,80 @@ class GoogleDocBackend(object):
 
     @property
     def html_table(self):
+        """ Get an HTML-table, via DataFrame """
         return self.df.to_html(index=False)
+
+    def get_players(self):
+        """ Get a list of PlayerStatus structs """
+
+        ids = self.col_values('ID')
+        phone_nums = self.col_values('Phone')
+        game_sts = self.col_values(self.current_game_col_name)
+        qtr_sts = self.col_values(self.current_qtr_col_name)
+
+        assert len(ids) == len(phone_nums)
+        assert len(ids) == len(game_sts)
+        assert len(ids) == len(qtr_sts)
+
+        players = []
+
+        for _ in range(len(ids)):
+            name = ids[_]
+            ph = phone_nums[_]
+            game = game_sts[_]
+            qtr = qtr_sts[_]
+
+            p = PlayerStatus(name=name, phone=ph, game_status=game, qtr_status=qtr)
+            players.append(p)
+
+        return players
+
+
+class PlayerStatus:
+    def __init__(self, *, name, phone, game_status, qtr_status):
+        self.name = name
+        self.phone = phone
+        self.game_status = game_status
+        self.qtr_status = qtr_status
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(name={self.name}, game_status={self.game_status}, qtr_status={self.qtr_status}'
+
+    def valid(self):
+        # Check name & phone are valid
+        return self.valid_name(self.name) and self.valid_phone(self.phone)
+
+    def pollable(self):
+        """ Know how to check for validity and "poll-ability" """
+        return self.active() and self.valid()
+
+    def active(self):
+        """ Boolean indication of activity for the current quarter """
+        # FIXME: some kind of status method
+        return self.qtr_status.lower() in ('full', 'half')
+
+    def game_status_known(self):
+        return self.game_status.lower() in 'in yes no out '.split()
+
+    @staticmethod
+    def valid_phone(phone):
+        if not isinstance(phone, str):
+            return False
+        elif len(phone) != 10:
+            return False
+        else:
+            for c in phone:
+                if not c.isdigit():
+                    return False
+            return True
+
+    @staticmethod
+    def valid_name(name):
+        return isinstance(name, str) and len(name) > 1
 
 
 if __name__ == '__main__':
     # For testing connections
-    GoogleDocBackend()
+    g = GoogleDocBackend()
+    for p in g.get_players():
+        print(p)
