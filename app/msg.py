@@ -1,3 +1,7 @@
+"""
+Messaging, including creation and calls to our Twilio client
+Plus a few uses thereof.
+"""
 import os
 import time
 
@@ -78,45 +82,3 @@ def poll_dan(msg=DEFAULT_MSG):
     """Debug method to ping just user `dan` """
     print('Polling Dan')
     all_status_msg(name='dan', phone=os.environ['DAN_PHONE_NUM'], msg=msg)
-
-
-"""
-Quarter-Status Polling Stuff
- Really only been used once.  
- Maybe bring to more-general life, some day.
-"""
-
-
-def qtr_status_msg(*, name, phone, qname, msg):
-    """ Send a full set of status links for quarter <qname> """
-
-    print(f'Sending quarter-status msg for {name}')
-    send_msg(phone=phone, body=msg)
-    time.sleep(1.0)
-
-    send_msg(phone=phone, body=os.environ['DOC_EDIT_URL'])
-    time.sleep(1.0)
-
-    for status in 'out half full '.split():
-        body = f'{app_url}/{name}/quarter/{qname}/{status}'
-        send_msg(phone=phone, body=body)
-        time.sleep(1.0)
-
-
-def poll_qtr(players, qname, msg):
-    for p in players:
-        name = p[0]
-        phone = p[1]
-        qtr_status_msg(name=name, phone=phone, qname=qname, msg=msg)
-
-
-def poll_q2():
-    """ Poll unknowns for the quarter """
-
-    u = get_unknowns(status_col='Q2_2018')
-    print(u)
-
-    to_poll = u
-    poll_qtr(players=to_poll,
-             qname='Q2_2018',
-             msg='Sunday BBall Q2 2018: ')

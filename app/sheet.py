@@ -29,7 +29,7 @@ class GoogleDocBackend(object):
                 raise ValueError(f'Did not find required column: {x}')
 
     def column(self, name):
-        # Return a one-index'ed column #, from column header/ name
+        """ Return a one-index'ed column #, from column header/ name """
         return self.headers.index(name) + 1
 
     def col_values(self, name):
@@ -45,33 +45,26 @@ class GoogleDocBackend(object):
     def ids(self):
         return self.sheet.col_values(col=self.column(name='ID'))
 
-    def update_status(self, id, status):
-        # Update Sunday status for ID <id>
-
+    def update(self, *, id, col, status):
+        """ Update Player-id `id`, column `col` to `status` """
         if id not in self.ids:
-            return False
+            raise ValueError
 
         r = self.ids.index(id) + 1
-        c = self.column(name='Sunday')
+        c = self.column(name=col)
         self.sheet.update_cell(row=r, col=c, val=status)
-        return True
 
-    def update_qtr(self, id, qtr, status):
-        # Update quarterly status for ID <id>, Quarter <qtr>
+    def update_status(self, *, id, status):
+        """ Update game-status for ID `id` """
+        return self.update(id=id, col=self.current_game_col_name, status=status)
 
-        if qtr not in self.headers:
-            return False
-        if id not in self.ids:
-            return False
-
-        r = self.ids.index(id) + 1
-        c = self.column(name=qtr)
-        self.sheet.update_cell(row=r, col=c, val=status)
-        return True
+    def update_qtr(self, *, id, status):
+        """ Update quarterly status for Player-ID `id`, Quarter `qtr` """
+        return self.update(id=id, col=self.current_qtr_col_name, status=status)
 
     @property
     def df(self):
-        # DataFrame summarizing the fun bits of back-end data.
+        """ DataFrame summarizing the fun bits of back-end data """
         do = OrderedDict()
         do['NAME'] = self.col_values('Name')[1:]
         do['ID'] = self.col_values('ID')[1:]
@@ -86,7 +79,8 @@ class GoogleDocBackend(object):
         return self.df.to_html(index=False)
 
     def get_players(self):
-        """ Get a list of PlayerStatus structs """
+        """ Get a list of PlayerStatus structs
+        FIXME: can be *a lot* more direct, iterating over rows """
 
         ids = self.col_values('ID')
         phone_nums = self.col_values('Phone')

@@ -1,3 +1,9 @@
+"""
+Main Flask App
+
+Including creation of the Flask instance,
+and all of our routes/ endpoints.
+"""
 import os
 from threading import Thread
 
@@ -54,7 +60,7 @@ def status():
 
 @app.route('/<name>/<status>')
 def update(name, status):
-    # Sunday status update
+    """ Game-status update """
 
     print(f'Status update request for: {name} to {status}')
     str_name = str(name).lower()
@@ -67,50 +73,16 @@ def update(name, status):
     if sts is None:
         return f'SORRY {name} didnt really understand {str_stat}'
 
-    if back_end.update_status(id=str_name, status=sts.STATUS):
+    try:
+        back_end.update_status(id=str_name, status=sts.STATUS)
+    except:
+        return """SORRY something screwed up trying to update yo status. 
+                           Maybe do it manually. """
+    else:
         return render_template('response.html',
                                STATUS=sts.STATUS,
                                REPLY=sts.REPLY,
                                DATA=back_end.html_table)
-
-    return """SORRY something screwed up trying to update yo status. 
-                   Maybe do it manually. """
-
-
-def get_qtr_status(str_stat):
-    if str_stat in 'full yes '.split():
-        return Full()
-    elif str_stat in 'out no '.split():
-        return Out()
-    elif str_stat in 'half '.split():
-        return Half()
-    else:
-        return None
-
-
-@app.route('/<name>/quarter/<qname>/<status>')
-def update_qtr(name, status, qname='Quarter'):
-    print(f'Quarterly status update request for: {name} to {status}')
-
-    str_name = str(name).lower()
-    str_stat = str(status).lower()
-    str_qname = str(qname)
-
-    if str_name not in back_end.ids:
-        return f'SORRY we aint know no {name} '
-
-    sts = get_qtr_status(str_stat)
-    if sts is None:
-        return f'SORRY {name} didnt really understand {str_stat}'
-
-    if back_end.update_qtr(id=str_name, qtr=str_qname, status=sts.STATUS):
-        return render_template('response.html',
-                               STATUS=sts.STATUS,
-                               REPLY=sts.REPLY,
-                               DATA='')
-
-    return """SORRY something screwed up trying to update yo status. 
-                       Maybe do it manually. """
 
 
 @app.route('/poll/<key>')
