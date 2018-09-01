@@ -5,7 +5,7 @@ verify_ssl = true
 [packages]
 gunicorn = "*"
 flask = "*"
-gspread = "*"
+gspread = "0.6.2" # FIXME: upgrading seems to break us.
 oauth2client = "*"
 pandas = "*"
 twilio = "*"

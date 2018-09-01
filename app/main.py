@@ -105,7 +105,3 @@ def poll(key=None):
     Thread(target=meth).start()
     # And respond with some log-style output
     return f'Running {meth.__name__}', 200
-
-
-if __name__ == '__main__':
-    app.run()
