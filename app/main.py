@@ -93,19 +93,16 @@ def poll(key=None):
     if key != os.environ['POLLING_KEY']:
         return f'Invalid Polling key {key}'
 
-    # Look up the method to use, from request data
-    default_method = 'poll_unknowns_sunday'
-    meth_name = request.args.get('method', default_method)
-
-    # Look up method from our `msg` module
-    from . import msg
-    meth = getattr(msg, meth_name, None)
-    if meth is None:
+    try:  # Look up the method to use, from request data
+        from .msg import get_polling_method
+        meth_name = request.args.get('method', None)
+        meth = get_polling_method(meth_name)
+        assert callable(meth)
+    except:
         return f'Invalid polling method: {meth}'
 
-    # Run it!
+    # Run it in the background
     Thread(target=meth).start()
-
     # And respond with some log-style output
     return f'Running {meth.__name__}', 200
 

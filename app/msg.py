@@ -7,8 +7,6 @@ import time
 
 from twilio.rest import Client
 
-from .sheet import GoogleDocBackend
-
 # Environment setup
 account_sid = os.environ['TWILIO_ACCT_SID']
 auth_token = os.environ['TWILIO_AUTH_TOKEN']
@@ -21,6 +19,7 @@ DEFAULT_MSG = 'SUNDAY BBALL: '
 
 
 def send_msg(phone, body):
+    """ Send a single SMS message, using our client """
     print(f'Sending {body} to {phone}')
     return client.api.account.messages.create(to='+1' + phone, from_=acct_num, body=body)
 
@@ -46,35 +45,38 @@ def all_status_msg(name, phone, msg=DEFAULT_MSG):
         time.sleep(1.0)
 
 
-def get_unknowns():
-    """ Get a list of active Players with unknown status for the upcoming game. """
-    players = GoogleDocBackend().get_players()
-    unknowns = []
+def get_polling_method(meth_name=None):
+    """ Grab a polling-method by string-key
+    Eventually these could be auto-registered somehow;
+    for now we just keep a look-up dict of them. """
 
-    for p in players:
-        if p.pollable() and not p.game_status_known():
-            unknowns.append(p)
+    methods = dict(
+        poll_game_unknowns=poll_game_unknowns,
+        poll_dan=poll_dan,
+    )
 
-    return unknowns
+    default_method = poll_game_unknowns
+    if meth_name is None:
+        return default_method
+
+    # Note missing-entries, other than `None`, will generate KeyErrors
+    # This is on the caller to handle.
+    return methods[meth_name]
 
 
-"""
-Maybe break this stuff out to a separate polling-module. 
-"""
-
-
-def poll_unknowns_sunday(msg=DEFAULT_MSG):
+def poll_game_unknowns(msg=DEFAULT_MSG):
     """ Poll everyone with unknown-status for upcoming game """
-    print(f'Running poll_unknowns_sunday with msg={msg}')
+    print(f'Running poll_game_unknowns with msg={msg}')
+    from .sheet import GoogleDocBackend
 
-    # Unknowns come back in a list of (name, phone) tuples, at least for now
-    unknowns = get_unknowns()
+    be = GoogleDocBackend()
+    unknowns = be.get_game_uknowns()
     # FIXME: would be nice to have a "real" way to test mock-up data.
     # unknowns = [('dan', os.environ['DAN_PHONE_NUM')]
 
     print(f'Unknowns: {str(unknowns)}')
     for u in unknowns:
-        print(f'poll_unknowns_sunday Polling : {name}, {ph}')
+        print(f'poll_game_unknowns Polling : {name}, {ph}')
         all_status_msg(name=u.name, phone=u.phone, msg=msg)
 
 

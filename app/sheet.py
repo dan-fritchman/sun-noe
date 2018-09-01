@@ -104,8 +104,18 @@ class GoogleDocBackend(object):
 
         return players
 
+    def get_game_uknowns(self):
+        """ Get a list of active Players with unknown status for the upcoming game. """
+        players = self.get_players()
+        return [p for p in players if p.pollable() and not p.game_status_known()]
+
 
 class PlayerStatus:
+    """ PlayerStatus
+    Generally represents a `row` in the back-end, including:
+    * Player id info (name, contact, etc)
+    * Status for key ongoing events (current game, current quarter) """
+
     def __init__(self, *, name, phone, game_status, qtr_status):
         self.name = name
         self.phone = phone
@@ -116,7 +126,7 @@ class PlayerStatus:
         return f'{self.__class__.__name__}(name={self.name}, game_status={self.game_status}, qtr_status={self.qtr_status}'
 
     def valid(self):
-        # Check name & phone are valid
+        """ Check name & phone are valid """
         return self.valid_name(self.name) and self.valid_phone(self.phone)
 
     def pollable(self):
@@ -129,6 +139,7 @@ class PlayerStatus:
         return self.qtr_status.lower() in ('full', 'half')
 
     def game_status_known(self):
+        # FIXME: should be a more central idea of known/ unknown
         return self.game_status.lower() in 'in yes no out '.split()
 
     @staticmethod
