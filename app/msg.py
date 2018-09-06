@@ -76,7 +76,7 @@ def poll_game_unknowns(msg=DEFAULT_MSG):
 
     print(f'Unknowns: {str(unknowns)}')
     for u in unknowns:
-        print(f'poll_game_unknowns Polling : {name}, {ph}')
+        print(f'poll_game_unknowns Polling : {u.name}, {u.phone}')
         all_status_msg(name=u.name, phone=u.phone, msg=msg)
 
 

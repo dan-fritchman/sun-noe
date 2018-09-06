@@ -1,6 +1,4 @@
-"""
-Local Polling Script
-"""
+""" Local Polling Script """
 
 
 def main():
