@@ -157,10 +157,3 @@ class PlayerStatus:
     @staticmethod
     def valid_name(name):
         return isinstance(name, str) and len(name) > 1
-
-
-if __name__ == '__main__':
-    # For testing connections
-    g = GoogleDocBackend()
-    for p in g.get_players():
-        print(p)
