@@ -1,0 +1,19 @@
+# NON-CANONICAL requirements list 
+# Really just used for setting up conda env 
+
+name: sun-noe-env
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.6
+  - gunicorn 
+  - flask 
+  - gspread=0.6.2 # FIXME: upgrading seems to break us.
+  - oauth2client
+  - pandas
+  - pipfile
+  - pytest
+  - pip:
+    - twilio
+

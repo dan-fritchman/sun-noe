@@ -15,7 +15,9 @@ class GoogleDocBackend(object):
 
     def __init__(self):
         # use creds to create a client to interact with the Google Drive API
-        scope = ['https://spreadsheets.google.com/feeds']
+        ##scope = ['https://spreadsheets.google.com/feeds']
+        scope = ['https://spreadsheets.google.com/feeds',
+         'https://www.googleapis.com/auth/drive']
         js = os.environ['GSPREAD_JSON']
         j = json.loads(js)
         creds = ServiceAccountCredentials.from_json_keyfile_dict(j, scope)
@@ -87,7 +89,7 @@ class GoogleDocBackend(object):
         game_sts = self.col_values(self.current_game_col_name)
         qtr_sts = self.col_values(self.current_qtr_col_name)
 
-        assert len(ids) == len(phone_nums)
+        assert len(ids) == len(phone_nums), f'Mismatched ID & Phone Lists {ids}, {phone_nums}'
         assert len(ids) == len(game_sts)
         assert len(ids) == len(qtr_sts)
 
