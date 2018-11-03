@@ -70,6 +70,7 @@ def poll_game_unknowns(msg=DEFAULT_MSG):
     from .sheet import GoogleDocBackend
 
     be = GoogleDocBackend()
+    print(be.debug_df)
     unknowns = be.get_game_uknowns()
     # FIXME: would be nice to have a "real" way to test mock-up data.
     # unknowns = [('dan', os.environ['DAN_PHONE_NUM')]
