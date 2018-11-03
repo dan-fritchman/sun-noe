@@ -1,3 +1,4 @@
+import warnings
 import json
 import os
 from collections import OrderedDict
@@ -119,17 +120,17 @@ class PlayerStatus:
     * Status for key ongoing events (current game, current quarter) """
 
     def __init__(self, *, name, phone, game_status, qtr_status):
-        self.name = name
-        self.phone = phone
-        self.game_status = game_status
-        self.qtr_status = qtr_status
+        self.name = name.strip()
+        self.phone = phone.strip()
+        self.game_status = game_status.strip()
+        self.qtr_status = qtr_status.strip()
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(name={self.name}, game_status={self.game_status}, qtr_status={self.qtr_status}'
+        return f'{self.__class__.__name__}(name={self.name}, phone={self.phone}, game_status={self.game_status}, qtr_status={self.qtr_status}'
 
     def valid(self):
         """ Check name & phone are valid """
-        return self.valid_name(self.name) and self.valid_phone(self.phone)
+        return self.valid_name() and self.valid_phone()
 
     def pollable(self):
         """ Know how to check for validity and "poll-ability" """
@@ -144,18 +145,23 @@ class PlayerStatus:
         # FIXME: should be a more central idea of known/ unknown
         return self.game_status.lower() in 'in yes no out '.split()
 
-    @staticmethod
-    def valid_phone(phone):
+    def valid_phone(self):
+        phone = self.phone 
         if not isinstance(phone, str):
+            ##warnings.warn(f'Non-string phone: {self}')
             return False
         elif len(phone) != 10:
+            ##warnings.warn(f'Wrong-length phone: {self}, length {len(self.phone)}')
             return False
         else:
             for c in phone:
                 if not c.isdigit():
+                    ##warnings.warn(f'Non-digit in phone: {self}')
                     return False
             return True
 
-    @staticmethod
-    def valid_name(name):
+    def valid_name(self):
+        name = self.name 
         return isinstance(name, str) and len(name) > 1
+
+
