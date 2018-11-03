@@ -1,7 +1,6 @@
 import warnings
 import json
 import os
-from collections import OrderedDict
 
 import gspread
 import pandas as pd
@@ -18,7 +17,7 @@ class GoogleDocBackend(object):
         # use creds to create a client to interact with the Google Drive API
         ##scope = ['https://spreadsheets.google.com/feeds']
         scope = ['https://spreadsheets.google.com/feeds',
-         'https://www.googleapis.com/auth/drive']
+                 'https://www.googleapis.com/auth/drive']
         js = os.environ['GSPREAD_JSON']
         j = json.loads(js)
         creds = ServiceAccountCredentials.from_json_keyfile_dict(j, scope)
@@ -68,11 +67,28 @@ class GoogleDocBackend(object):
     @property
     def df(self):
         """ DataFrame summarizing the fun bits of back-end data """
-        do = OrderedDict()
+        do = dict()
         do['NAME'] = self.col_values('Name')[1:]
         do['ID'] = self.col_values('ID')[1:]
         do['SUNDAY'] = self.col_values('Sunday')[1:]
         do['QUARTER'] = self.col_values('Quarter')[1:]
+        df = pd.DataFrame(do)
+        return df
+
+    @property
+    def debug_df(self):
+        """ DataFrame summarizing the fun bits of back-end data """
+        players = self.get_players()
+        do = dict()
+        do['ID'] = [p.name for p in players]
+        do['GAME'] = [p.game_status for p in players]
+        do['QUARTER'] = [p.qtr_status for p in players]
+        do['ACTIVE'] = [p.active() for p in players]
+        do['VALID'] = [p.valid() for p in players]
+        do['VALID_PHONE'] = [p.valid_phone() for p in players]
+        do['VALID_NAME'] = [p.valid_name() for p in players]
+        do['POLLABLE'] = [p.pollable() for p in players]
+        do['GAME_KNOWN'] = [p.game_status_known() for p in players]
         df = pd.DataFrame(do)
         return df
 
@@ -146,7 +162,7 @@ class PlayerStatus:
         return self.game_status.lower() in 'in yes no out '.split()
 
     def valid_phone(self):
-        phone = self.phone 
+        phone = self.phone
         if not isinstance(phone, str):
             ##warnings.warn(f'Non-string phone: {self}')
             return False
@@ -161,7 +177,5 @@ class PlayerStatus:
             return True
 
     def valid_name(self):
-        name = self.name 
+        name = self.name
         return isinstance(name, str) and len(name) > 1
-
-
