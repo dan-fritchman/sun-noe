@@ -101,29 +101,19 @@ class GoogleDocBackend(object):
         return self.df.to_html(index=False)
 
     def get_players(self):
-        """ Get a list of PlayerStatus structs
-        FIXME: can be *a lot* more direct, iterating over rows """
-
-        ids = self.col_values('ID')
-        phone_nums = self.col_values('Phone')
-        game_sts = self.col_values(self.current_game_col_name)
-        qtr_sts = self.col_values(self.current_qtr_col_name)
-
-        assert len(ids) == len(phone_nums), f'Mismatched ID & Phone Lists {ids}, {phone_nums}'
-        assert len(ids) == len(game_sts)
-        assert len(ids) == len(qtr_sts)
-
+        """ Get a list of PlayerStatus structs """
+        records = self.sheet.get_all_records()
         players = []
-
-        for _ in range(len(ids)):
-            name = ids[_]
-            ph = phone_nums[_]
-            game = game_sts[_]
-            qtr = qtr_sts[_]
-
-            p = PlayerStatus(name=name, phone=ph, game_status=game, qtr_status=qtr)
-            players.append(p)
-
+        for r in records:
+            p = PlayerStatus(name=str(r['ID']),
+                             phone=str(r['Phone']),
+                             game_status=str(r[self.current_game_col_name]),
+                             qtr_status=str(r[self.current_qtr_col_name]))
+            if p.valid():
+                players.append(p)
+                print(f'Adding Valid Player {p}')
+            else:
+                print(f'Not Adding Invalid Player {p}')
         return players
 
     def get_game_uknowns(self):
@@ -138,7 +128,7 @@ class PlayerStatus:
     * Player id info (name, contact, etc)
     * Status for key ongoing events (current game, current quarter) """
 
-    def __init__(self, *, name, phone, game_status, qtr_status):
+    def __init__(self, *, name: str, phone: str, game_status: str, qtr_status: str):
         self.name = name.strip()
         self.phone = phone.strip()
         self.game_status = game_status.strip()
@@ -165,6 +155,7 @@ class PlayerStatus:
         return self.game_status.lower() in 'in yes no out '.split()
 
     def valid_phone(self):
+        """ Test phone validity.  *Only* accepts ten-digit strings (no punctuation). """
         phone = self.phone
         if not isinstance(phone, str):
             ##warnings.warn(f'Non-string phone: {self}')
@@ -180,5 +171,6 @@ class PlayerStatus:
             return True
 
     def valid_name(self):
+        """ Test name (id) validity.  Really just a string-length test. """
         name = self.name
         return isinstance(name, str) and len(name) > 1
