@@ -14,46 +14,9 @@ back_end = GoogleDocBackend()
 app = Flask(__name__)
 
 
-class Reply(object):
-    @staticmethod
-    def from_str(str_stat: str):
-        if str_stat in 'in yes '.split():
-            return In()
-        elif str_stat in 'out no '.split():
-            return Out()
-        elif str_stat in 'tbd '.split():
-            return Tbd()
-        return None
-
-
-class In(Reply):
-    STATUS = 'IN'
-    REPLY = 'Got it. See you Sunday.'
-
-
-class Out(Reply):
-    STATUS = 'OUT'
-    REPLY = 'Aight. Catch you next time.'
-
-
-class Tbd(Reply):
-    STATUS = 'TBD'
-    REPLY = 'OK, keep us posted later this week.'
-
-
-class Full(Reply):
-    STATUS = 'FULL'
-    REPLY = 'Got it.'
-
-
-class Half(Reply):
-    STATUS = 'HALF'
-    REPLY = 'Aight, well see you half time.'
-
-
 @app.route('/')
 @app.route('/status')
-def status():
+def status_table():
     return back_end.html_table
 
 
@@ -68,15 +31,16 @@ def update(name, status):
     if str_name not in back_end.ids:
         return f'SORRY we aint know no {name} '
 
-    sts = Reply.from_str(str_stat)
-    if sts is None:
+    from .models import GameStatus
+    sts = GameStatus.from_str(str_stat)
+    if not sts.valid():
         return f'SORRY {name} didnt really understand {str_stat}'
 
     try:
-        back_end.update_status(id=str_name, status=sts.STATUS)
-    except:
-        return """SORRY something screwed up trying to update yo status. 
-                           Maybe do it manually. """
+        back_end.update_game_status(id=str_name, status=sts.STATUS)
+    except Exception as e:
+        print(e)
+        return """SORRY something screwed up trying to update yo status. Maybe do it manually. """
     else:
         return render_template('response.html',
                                STATUS=sts.STATUS,
@@ -86,15 +50,15 @@ def update(name, status):
 
 @app.route('/poll/<key>')
 def poll(key=None):
-    """ URL for SMS-based polling """
+    """ URL-based invocation of SMS polling """
 
     # Check they got the secret-key right
     if key != config.polling_key:
         return f'Invalid Polling key {key}'
 
     try:  # Look up the method to use, from request data
-        from .msg import get_polling_method
         meth_name = request.args.get('method', None)
+        from .msg import get_polling_method
         meth = get_polling_method(meth_name)
         assert callable(meth)
     except:

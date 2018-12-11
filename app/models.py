@@ -1,3 +1,10 @@
+"""
+Player "Database" "Models"
+All with plenty of air-quote sarcasm.
+A few simple classes to capture the ideas tabulated in-sheet.
+"""
+
+
 class Cell(object):
     """ Roughly, a cell in our spreadsheet back-end. """
 
@@ -27,26 +34,84 @@ class Id(Cell):
 class Phone(Cell):
     """ Phone Numbers """
 
+    @staticmethod
+    def format(s):
+        """ More phone-number formatting.  Mostly clear out punctuation. """
+        x = Cell.format(s)
+        x = x.replace('(', '')
+        x = x.replace(')', '')
+        x = x.replace('-', '')
+        return x
+
     def valid(self) -> bool:
         """ Test phone validity.  *Only* accepts ten-digit strings (no punctuation). """
-        phone = self.s
-        if not isinstance(phone, str):
+        if len(self.s) != 10:
             return False
-        elif len(phone) != 10:
-            return False
-        else:
-            for c in phone:
-                if not c.isdigit():
-                    return False
-            return True
+        return all([c.isdigit() for c in self.s])
 
 
-class GameStatus(Cell):
-    pass
+class Status(Cell):
+    """ Base class for status-replies """
+
+    def __init__(self, s, reply):
+        super().__init__(s)
+        self.reply = reply
 
 
-class QuarterStatus(Cell):
-    pass
+class GameStatus(Status):
+    """ Game Reply-Status """
+
+    @staticmethod
+    def from_str(str_stat: str):
+        if str_stat in 'in yes '.split():
+            return In
+        elif str_stat in 'out no '.split():
+            return Out
+        elif str_stat in 'tbd '.split():
+            return Tbd
+        return Unknown
+
+    def valid(self):
+        return bool(len(self.s))
+
+    def known(self):
+        return self.s.lower() in 'in yes no out '.split()
+
+    @property
+    def STATUS(self):
+        return self.s
+
+    @property
+    def REPLY(self):
+        return self.reply
+
+
+In = GameStatus(s='IN', reply='Got it. See you Sunday.')
+Out = GameStatus(s='OUT', reply='Aight. Catch you next time.')
+Tbd = GameStatus(s='TBD', reply='OK, keep us posted later this week.')
+Unknown = GameStatus(s='', reply='')
+
+
+class QuarterStatus(Status):
+    """ Quarterly Activity Status """
+
+    @classmethod
+    def from_str(cls, s):
+        s_ = str(s)
+        if s_.lower() == 'full':
+            return Full
+        if s_.lower() == 'half':
+            return Half
+        return Inactive
+
+    def active(self):
+        """ Boolean indication of activity for the current quarter """
+        return self.s.lower() in ('full', 'half')
+
+
+Full = QuarterStatus(s='FULL', reply='Got it.')
+Half = QuarterStatus(s='HALF', reply='Got that too.')
+Inactive = QuarterStatus(s='OUT', reply='Got that too.')
 
 
 class PlayerStatus:
@@ -60,17 +125,19 @@ class PlayerStatus:
         """ Create a new PlayerStatus from dict `d` with appropriate keys. """
         id_ = Id(d['ID'])
         phone = Phone(d['Phone'])
-        game = GameStatus(d['game'])
-        qtr = GameStatus(d['qtr'])
+        game = GameStatus.from_str(d['game'])
+        qtr = QuarterStatus.from_str(d['qtr'])
         return PlayerStatus(id_=id_, phone=phone, game_status=game, qtr_status=qtr)
 
-    def __init__(self, *, id_: Id, phone: Phone, game_status: str, qtr_status: str):
+    def __init__(self, *, id_: Id, phone: Phone, game_status: GameStatus, qtr_status: QuarterStatus):
         assert isinstance(id_, Id)
         self.id_ = id_
         assert isinstance(phone, Phone)
         self.phone = phone
-        self.game_status = str(game_status).strip()
-        self.qtr_status = str(qtr_status).strip()
+        assert isinstance(game_status, GameStatus)
+        self.game_status = game_status
+        assert isinstance(qtr_status, QuarterStatus)
+        self.qtr_status = qtr_status
 
     def __repr__(self):
         return f'{self.__class__.__name__}' \
@@ -83,17 +150,16 @@ class PlayerStatus:
         return self.id_.valid() and self.phone.valid()
 
     def pollable(self):
-        """ Know how to check for validity and "poll-ability" """
+        """ "Poll-ability" == valid info, and an active quarter-status. """
         return self.valid() and self.active()
 
     def active(self):
-        """ Boolean indication of activity for the current quarter """
-        # FIXME: some kind of status method
-        return self.qtr_status.lower() in ('full', 'half')
+        """ Quarter-active status.  Delegated to `self.qtr_status`. """
+        return self.qtr_status.active()
 
     def game_status_known(self):
-        # FIXME: should be a more central idea of known/ unknown
-        return self.game_status.lower() in 'in yes no out '.split()
+        """ Game-status known.  Delegated to `self.game_status`. """
+        return self.game_status.known()
 
     def valid_phone(self):
         """ Test phone validity. Delegated to `self.phone`. """

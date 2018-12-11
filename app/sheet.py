@@ -1,3 +1,7 @@
+"""
+Google Sheets manipulation, as a sort of database client.
+"""
+
 import json
 
 import gspread
@@ -11,9 +15,9 @@ class GoogleDocBackend(object):
     """ "Client" for our Google-Sheet-based "player database". """
 
     sheet_name = 'Sunday Noe Bball'
-    expected_cols = 'Name ID Phone Sunday '.split()
-    current_game_col_name = 'Sunday'
-    current_qtr_col_name = 'Q4_2018'
+    game_col_name = 'Sunday'
+    qtr_col_name = 'Q4_2018'
+    required_cols = ['Name', 'ID', game_col_name, qtr_col_name]
 
     def __init__(self):
         # Create a Google Drive API client
@@ -29,15 +33,15 @@ class GoogleDocBackend(object):
         self.sheet = client.open(self.sheet_name).sheet1
 
         # Check for required columns
-        for x in self.expected_cols:
+        for x in self.required_cols:
             if x not in self.headers:
                 raise ValueError(f'Did not find required column: {x}')
 
-    def column(self, name):
+    def column(self, name: str):
         """ Return a one-index'ed column #, from column header/ name """
         return self.headers.index(name) + 1
 
-    def col_values(self, name):
+    def col_values(self, name: str):
         """ Get the column-values in column-name `name` """
         return self.sheet.col_values(col=self.column(name=name))
 
@@ -58,30 +62,30 @@ class GoogleDocBackend(object):
 
         r = self.ids.index(id) + 1
         c = self.column(name=col)
-        self.sheet.update_cell(row=r, col=c, val=status)
+        self.sheet.update_cell(row=r, col=c, value=status)
 
-    def update_status(self, *, id: str, status: str):
+    def update_game_status(self, *, id: str, status: str):
         """ Update game-status for ID `id` """
-        return self.update(id=id, col=self.current_game_col_name, status=status)
+        return self.update(id=id, col=self.game_col_name, status=status)
 
     def update_qtr(self, *, id: str, status: str):
         """ Update quarterly status for Player-ID `id`, Quarter `qtr` """
-        return self.update(id=id, col=self.current_qtr_col_name, status=status)
+        return self.update(id=id, col=self.qtr_col_name, status=status)
 
     @property
     def df(self):
         """ DataFrame summarizing the fun bits of back-end data """
-        do = dict()
-        do['NAME'] = self.col_values('Name')[1:]
-        do['ID'] = self.col_values('ID')[1:]
-        do['SUNDAY'] = self.col_values('Sunday')[1:]
-        do['QUARTER'] = self.col_values('Quarter')[1:]
-        df = pd.DataFrame(do)
-        return df
+        records = self.sheet.get_all_records()
+        return pd.DataFrame.from_records(data=records, columns=self.required_cols)
+
+    @property
+    def html_table(self):
+        """ Get an HTML-table, via DataFrame """
+        return self.df.to_html(index=False)
 
     @property
     def debug_df(self):
-        """ DataFrame summarizing the fun bits of back-end data """
+        """ DataFrame with much more debug info. """
         players = self.get_players()
         do = dict()
         do['ID'] = [p.name for p in players]
@@ -96,32 +100,20 @@ class GoogleDocBackend(object):
         df = pd.DataFrame(do)
         return df
 
-    @property
-    def html_table(self):
-        """ Get an HTML-table, via DataFrame """
-        return self.df.to_html(index=False)
-
     def get_players(self):
-        """ Get a list of PlayerStatus structs """
+        """ Returns a list of PlayerStatus structs """
         players = []
         records = self.sheet.get_all_records()
         for r in records:
-            p = self.get_player_status(r)
+            r['game'] = r[self.game_col_name]
+            r['qtr'] = r[self.qtr_col_name]
+            from .models import PlayerStatus
+            p = PlayerStatus.from_dict(r)
             if p.valid():
                 players.append(p)
-                print(f'Adding Valid Player {p}')
-            else:
-                print(f'Not Adding Invalid Player {p}')
         return players
 
-    def get_game_uknowns(self):
+    def get_game_unknowns(self):
         """ Get a list of active Players with unknown status for the upcoming game. """
         players = self.get_players()
         return [p for p in players if p.pollable() and not p.game_status_known()]
-
-    def get_player_status(self, r: dict):
-        """ Get a PlayerStatus from dictionary-record `r`. """
-        r['game'] = r[self.current_game_col_name]
-        r['qtr'] = r[self.current_qtr_col_name]
-        from .models import PlayerStatus
-        return PlayerStatus.from_dict(r)
