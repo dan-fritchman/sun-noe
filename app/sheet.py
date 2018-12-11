@@ -1,40 +1,47 @@
-import warnings
+"""
+Google Sheets manipulation, as a sort of database client.
+"""
+
 import json
-import os
 
 import gspread
 import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
 
+from . import config
+
 
 class GoogleDocBackend(object):
+    """ "Client" for our Google-Sheet-based "player database". """
+
     sheet_name = 'Sunday Noe Bball'
-    expected_cols = 'Name ID Phone Sunday '.split()
-    current_game_col_name = 'Sunday'
-    current_qtr_col_name = 'Q4_2018'
+    game_col_name = 'Sunday'
+    qtr_col_name = 'Q4_2018'
+    required_cols = ['Name', 'ID', game_col_name, qtr_col_name]
 
     def __init__(self):
-        # use creds to create a client to interact with the Google Drive API
-        ##scope = ['https://spreadsheets.google.com/feeds']
+        # Create a Google Drive API client
         scope = ['https://spreadsheets.google.com/feeds',
                  'https://www.googleapis.com/auth/drive']
-        js = os.environ['GSPREAD_JSON']
+        js = config.gspread_json
         j = json.loads(js)
         creds = ServiceAccountCredentials.from_json_keyfile_dict(j, scope)
         client = gspread.authorize(creds)
 
         # Load up the sheet
+        self.url = config.gspread_url
         self.sheet = client.open(self.sheet_name).sheet1
+
         # Check for required columns
-        for x in self.expected_cols:
+        for x in self.required_cols:
             if x not in self.headers:
                 raise ValueError(f'Did not find required column: {x}')
 
-    def column(self, name):
+    def column(self, name: str):
         """ Return a one-index'ed column #, from column header/ name """
         return self.headers.index(name) + 1
 
-    def col_values(self, name):
+    def col_values(self, name: str):
         """ Get the column-values in column-name `name` """
         return self.sheet.col_values(col=self.column(name=name))
 
@@ -47,37 +54,38 @@ class GoogleDocBackend(object):
     def ids(self):
         return self.sheet.col_values(col=self.column(name='ID'))
 
-    def update(self, *, id, col, status):
+    def update(self, *, id: str, col: str, status: str):
         """ Update Player-id `id`, column `col` to `status` """
         if id not in self.ids:
-            raise ValueError
+            print(f'{self} Cannot Update Unknown ID {id}')
+            return None
 
         r = self.ids.index(id) + 1
         c = self.column(name=col)
-        self.sheet.update_cell(row=r, col=c, val=status)
+        self.sheet.update_cell(row=r, col=c, value=status)
 
-    def update_status(self, *, id, status):
+    def update_game_status(self, *, id: str, status: str):
         """ Update game-status for ID `id` """
-        return self.update(id=id, col=self.current_game_col_name, status=status)
+        return self.update(id=id, col=self.game_col_name, status=status)
 
-    def update_qtr(self, *, id, status):
+    def update_qtr(self, *, id: str, status: str):
         """ Update quarterly status for Player-ID `id`, Quarter `qtr` """
-        return self.update(id=id, col=self.current_qtr_col_name, status=status)
+        return self.update(id=id, col=self.qtr_col_name, status=status)
 
     @property
     def df(self):
         """ DataFrame summarizing the fun bits of back-end data """
-        do = dict()
-        do['NAME'] = self.col_values('Name')[1:]
-        do['ID'] = self.col_values('ID')[1:]
-        do['SUNDAY'] = self.col_values('Sunday')[1:]
-        do['QUARTER'] = self.col_values('Quarter')[1:]
-        df = pd.DataFrame(do)
-        return df
+        records = self.sheet.get_all_records()
+        return pd.DataFrame.from_records(data=records, columns=self.required_cols)
+
+    @property
+    def html_table(self):
+        """ Get an HTML-table, via DataFrame """
+        return self.df.to_html(index=False)
 
     @property
     def debug_df(self):
-        """ DataFrame summarizing the fun bits of back-end data """
+        """ DataFrame with much more debug info. """
         players = self.get_players()
         do = dict()
         do['ID'] = [p.name for p in players]
@@ -92,90 +100,20 @@ class GoogleDocBackend(object):
         df = pd.DataFrame(do)
         return df
 
-    @property
-    def html_table(self):
-        """ Get an HTML-table, via DataFrame """
-        return self.df.to_html(index=False)
-
     def get_players(self):
-        """ Get a list of PlayerStatus structs
-        FIXME: can be *a lot* more direct, iterating over rows """
-
-        ids = self.col_values('ID')
-        phone_nums = self.col_values('Phone')
-        game_sts = self.col_values(self.current_game_col_name)
-        qtr_sts = self.col_values(self.current_qtr_col_name)
-
-        assert len(ids) == len(phone_nums), f'Mismatched ID & Phone Lists {ids}, {phone_nums}'
-        assert len(ids) == len(game_sts)
-        assert len(ids) == len(qtr_sts)
-
+        """ Returns a list of PlayerStatus structs """
         players = []
-
-        for _ in range(len(ids)):
-            name = ids[_]
-            ph = phone_nums[_]
-            game = game_sts[_]
-            qtr = qtr_sts[_]
-
-            p = PlayerStatus(name=name, phone=ph, game_status=game, qtr_status=qtr)
-            players.append(p)
-
+        records = self.sheet.get_all_records()
+        for r in records:
+            r['game'] = r[self.game_col_name]
+            r['qtr'] = r[self.qtr_col_name]
+            from .models import PlayerStatus
+            p = PlayerStatus.from_dict(r)
+            if p.valid():
+                players.append(p)
         return players
 
-    def get_game_uknowns(self):
+    def get_game_unknowns(self):
         """ Get a list of active Players with unknown status for the upcoming game. """
         players = self.get_players()
         return [p for p in players if p.pollable() and not p.game_status_known()]
-
-
-class PlayerStatus:
-    """ PlayerStatus
-    Generally represents a `row` in the back-end, including:
-    * Player id info (name, contact, etc)
-    * Status for key ongoing events (current game, current quarter) """
-
-    def __init__(self, *, name, phone, game_status, qtr_status):
-        self.name = name.strip()
-        self.phone = phone.strip()
-        self.game_status = game_status.strip()
-        self.qtr_status = qtr_status.strip()
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}(name={self.name}, phone={self.phone}, game_status={self.game_status}, qtr_status={self.qtr_status}'
-
-    def valid(self):
-        """ Check name & phone are valid """
-        return self.valid_name() and self.valid_phone()
-
-    def pollable(self):
-        """ Know how to check for validity and "poll-ability" """
-        return self.active() and self.valid()
-
-    def active(self):
-        """ Boolean indication of activity for the current quarter """
-        # FIXME: some kind of status method
-        return self.qtr_status.lower() in ('full', 'half')
-
-    def game_status_known(self):
-        # FIXME: should be a more central idea of known/ unknown
-        return self.game_status.lower() in 'in yes no out '.split()
-
-    def valid_phone(self):
-        phone = self.phone
-        if not isinstance(phone, str):
-            ##warnings.warn(f'Non-string phone: {self}')
-            return False
-        elif len(phone) != 10:
-            ##warnings.warn(f'Wrong-length phone: {self}, length {len(self.phone)}')
-            return False
-        else:
-            for c in phone:
-                if not c.isdigit():
-                    ##warnings.warn(f'Non-digit in phone: {self}')
-                    return False
-            return True
-
-    def valid_name(self):
-        name = self.name
-        return isinstance(name, str) and len(name) > 1

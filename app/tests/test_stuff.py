@@ -16,7 +16,7 @@ def test_back_end_connection(g):
 
 def test_unknowns(g):
     """ Test we can make a back-end connection. """
-    p = g.get_game_uknowns()
+    p = g.get_game_unknowns()
     assert isinstance(p, list)
 
 

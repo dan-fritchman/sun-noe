@@ -9,7 +9,7 @@ dependencies:
   - python=3.6
   - gunicorn 
   - flask 
-  - gspread=0.6.2 # FIXME: upgrading seems to break us.
+  - gspread
   - oauth2client
   - pandas
   - pipfile
