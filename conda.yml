@@ -1,4 +1,5 @@
-# NON-CANONICAL requirements list 
+
+# Non-canonical requirements list
 # Really just used for setting up conda env 
 
 name: sun-noe-env
@@ -15,5 +16,6 @@ dependencies:
   - pipfile
   - pytest
   - pip:
+    - pipenv
     - twilio
 
