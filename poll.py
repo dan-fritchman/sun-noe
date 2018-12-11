@@ -8,7 +8,7 @@ def main():
 
     from app.msg import poll_dan, poll_game_unknowns
     poll_dan(msg='???')
-    poll_game_unknowns()
+    # poll_game_unknowns()
 
 
 if __name__ == '__main__':

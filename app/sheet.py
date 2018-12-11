@@ -1,13 +1,15 @@
-import warnings
 import json
-import os
 
 import gspread
 import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
 
+from . import config
+
 
 class GoogleDocBackend(object):
+    """ "Client" for our Google-Sheet-based "player database". """
+
     sheet_name = 'Sunday Noe Bball'
     expected_cols = 'Name ID Phone Sunday '.split()
     current_game_col_name = 'Sunday'
@@ -18,12 +20,13 @@ class GoogleDocBackend(object):
         ##scope = ['https://spreadsheets.google.com/feeds']
         scope = ['https://spreadsheets.google.com/feeds',
                  'https://www.googleapis.com/auth/drive']
-        js = os.environ['GSPREAD_JSON']
+        js = config.gspread_json
         j = json.loads(js)
         creds = ServiceAccountCredentials.from_json_keyfile_dict(j, scope)
         client = gspread.authorize(creds)
 
         # Load up the sheet
+        self.url = config.gspread_url
         self.sheet = client.open(self.sheet_name).sheet1
         # Check for required columns
         for x in self.expected_cols:

@@ -4,11 +4,10 @@ Main Flask App
 Including creation of the Flask instance,
 and all of our routes/ endpoints.
 """
-import os
-from threading import Thread
 
 from flask import Flask, render_template, request
 
+from . import config
 from .sheet import GoogleDocBackend
 
 back_end = GoogleDocBackend()
@@ -17,7 +16,7 @@ app = Flask(__name__)
 
 class Reply(object):
     @staticmethod
-    def from_str(str_stat):
+    def from_str(str_stat: str):
         if str_stat in 'in yes '.split():
             return In()
         elif str_stat in 'out no '.split():
@@ -90,7 +89,7 @@ def poll(key=None):
     """ URL for SMS-based polling """
 
     # Check they got the secret-key right
-    if key != os.environ['POLLING_KEY']:
+    if key != config.polling_key:
         return f'Invalid Polling key {key}'
 
     try:  # Look up the method to use, from request data
@@ -102,6 +101,8 @@ def poll(key=None):
         return f'Invalid polling method: {meth}'
 
     # Run it in the background
+    from threading import Thread
     Thread(target=meth).start()
+
     # And respond with some log-style output
     return f'Running {meth.__name__}', 200
