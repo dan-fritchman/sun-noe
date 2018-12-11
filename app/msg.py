@@ -11,9 +11,9 @@ class SmsMessage(object):
     """ Base class for an SMS Message, or a surrogate therefore. """
 
     def __init__(self, *, to: str, from_: str, body: str):
-        self.to = to
-        self.from_ = from_
-        self.body = body
+        self.to = str(to)
+        self.from_ = str(from_)
+        self.body = str(body)
 
     def __repr__(self):
         return f'{self.__class__.__name__}(to={self.to}, from={self.from_}, body={self.body})'
