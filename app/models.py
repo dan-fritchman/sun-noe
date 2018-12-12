@@ -63,11 +63,13 @@ class GameStatus(Status):
 
     @staticmethod
     def from_str(str_stat: str):
-        if str_stat in 'in yes '.split():
+        """ Create from one of a few strings """
+        s = str(str_stat).lower().strip()
+        if s in 'in yes '.split():
             return In
-        elif str_stat in 'out no '.split():
+        elif s in 'out no '.split():
             return Out
-        elif str_stat in 'tbd '.split():
+        elif s in 'tbd '.split():
             return Tbd
         return Unknown
 
@@ -75,7 +77,7 @@ class GameStatus(Status):
         return bool(len(self.s))
 
     def known(self):
-        return self.s.lower() in 'in yes no out '.split()
+        return self in [In, Out]  ##.s.lower() in 'in yes no out '.split()
 
     @property
     def STATUS(self):
@@ -89,24 +91,26 @@ class GameStatus(Status):
 In = GameStatus(s='IN', reply='Got it. See you Sunday.')
 Out = GameStatus(s='OUT', reply='Aight. Catch you next time.')
 Tbd = GameStatus(s='TBD', reply='OK, keep us posted later this week.')
-Unknown = GameStatus(s='', reply='')
+Unknown = GameStatus(s='UNKNOWN', reply='')
 
 
 class QuarterStatus(Status):
     """ Quarterly Activity Status """
 
     @classmethod
-    def from_str(cls, s):
-        s_ = str(s)
-        if s_.lower() == 'full':
+    def from_str(cls, status_str):
+        """ Create new QtrStatus from one of a few priviledged strings.
+        Returns Inactive Status for all unknown inputs. """
+        s = str(status_str).lower().strip()
+        if s == 'full':
             return Full
-        if s_.lower() == 'half':
+        if s == 'half':
             return Half
         return Inactive
 
     def active(self):
         """ Boolean indication of activity for the current quarter """
-        return self.s.lower() in ('full', 'half')
+        return self in [Full, Half]
 
 
 Full = QuarterStatus(s='FULL', reply='Got it.')
