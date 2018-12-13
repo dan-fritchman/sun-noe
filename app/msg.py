@@ -21,6 +21,12 @@ class SmsMessage(object):
     def send(self):
         raise NotImplementedError
 
+    @classmethod
+    def from_config(cls, *args, **kwargs):
+        """ Create a new SmsMessage or sub-class based on `config.get_message_class`. """
+        message_class = config.get_message_class()
+        return message_class(*args, **kwargs)
+
 
 class TwilioMessage(SmsMessage):
     """ SMS Message sent via Twilio client """
@@ -39,14 +45,10 @@ class PrintMessage(SmsMessage):
         print(f'Fake-Sending {self}')
 
 
-# Default use-case. Some day move to config.
-MessageClass = TwilioMessage
-
-
 def send_msg(phone, body):
     """ Send a single SMS message, using our client """
     print(f'Sending {body} to {phone}')
-    msg = MessageClass(to=phone, from_=config.acct_num, body=body)
+    msg = SmsMessage.from_config(to=phone, from_=config.acct_num, body=body)
     return msg.send()
 
 
@@ -62,8 +64,6 @@ def all_status_msg(name, phone, msg=config.DEFAULT_MSG):
 
     send_msg(phone=phone, body=msg)
     time.sleep(1.0)
-    # send_msg(phone=phone, body=config.gspread_url)
-    # time.sleep(1.0)
 
     for status in 'in out tbd'.split():
         send_status_msg(name=name, phone=phone, status=status)
@@ -98,9 +98,10 @@ def poll_game_unknowns(msg=config.DEFAULT_MSG):
     print(be.debug_df)
     unknowns = be.get_game_unknowns()
     # FIXME: would be nice to have a "real" way to test mock-up data.
-    # unknowns = [('dan', os.environ['DAN_PHONE_NUM')]
+    # unknowns = [('dan', config.host_phone_num]
 
-    print(f'Unknowns: {str(unknowns)}')
+    print(f'Polling {len(unknowns)} Unknowns: ')
+    [print(p) for p in unknowns]
     for u in unknowns:
         print(f'poll_game_unknowns Polling : {u.name}, {u.phone}')
         all_status_msg(name=u.name, phone=u.phone, msg=msg)

@@ -37,4 +37,3 @@ def test_debug_df(g):
     """ Check all of our debug, pollable, etc info """
     df = g.debug_df
     assert df is not None
-    print(df)

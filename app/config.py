@@ -14,3 +14,9 @@ polling_key = os.environ['POLLING_KEY']
 
 # Default behaviors
 DEFAULT_MSG = 'SUNDAY BBALL: '
+
+
+def get_message_class():
+    """ Configuration of which message-class to use. """
+    from .msg import PrintMessage, TwilioMessage
+    return TwilioMessage
