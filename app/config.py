@@ -10,6 +10,7 @@ app_url = os.environ['APP_URL']
 host_phone_num = os.environ['DAN_PHONE_NUM']
 gspread_url = os.environ['DOC_EDIT_URL']
 gspread_json = os.environ['GSPREAD_JSON']
+polling_key = os.environ['POLLING_KEY']
 
 # Default behaviors
 DEFAULT_MSG = 'SUNDAY BBALL: '
